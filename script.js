@@ -47,18 +47,39 @@ function inputDigit(digit){
     }
 }
 function setOperator(operator) {
+   if (shouldResetScreen && currentOperator !== null) {
+        currentOperator = operator; // just replace it
+        return;
+    }
+    if (currentOperator !== null && !shouldResetScreen) {
+        evaluate(); 
+    }
     firstOperand = parseFloat(currentInput);
     currentOperator = operator;
     shouldResetScreen = true;
 }
-function evaluate() {
+
+   function evaluate() {
+    if (currentOperator === null || shouldResetScreen) return;
+
     const secondOperand = parseFloat(currentInput);
-    const result = operate(currentOperator, firstOperand, secondOperand);
+
+    if (currentOperator === '/' && secondOperand === 0) {
+        document.getElementById('display').textContent = "😬 Can't divide by 0!";
+        return;
+    }
+
+    let result = operate(currentOperator, firstOperand, secondOperand);
+
+    result = Math.round(result * 1000000) / 1000000;
 
     document.getElementById('display').textContent = result;
     currentInput = result.toString();
+    firstOperand = result;
     shouldResetScreen = true;
 }
+
+
 function clear() {
     currentInput = '0';
     firstOperand = null;
@@ -77,6 +98,16 @@ function backspace() {
         display.textContent = '0';
         currentInput = '0';
     }
+}
+function inputDecimal() {
+    if (shouldResetScreen) {
+        currentInput = '0.';
+        shouldResetScreen = false;
+    } else if (!currentInput.includes('.')) {
+        currentInput += '.';
+    }
+
+    document.getElementById('display').textContent = currentInput;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -100,6 +131,9 @@ const clearButton = document.getElementById("clear");
 clearButton.addEventListener("click", clear);
  const backspaceButton = document.getElementById("backspace");
 backspaceButton.addEventListener("click", backspace);
+const decimalButton = document.getElementById("decimal");
+decimalButton.addEventListener("click", inputDecimal);
+
 
 });
 
